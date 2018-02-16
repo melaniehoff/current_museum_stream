@@ -10,13 +10,24 @@ html
     script(src='/js/index.js')
     title Current Salon Stream
   body
-    h1 THE CURRENT SALON // IDENTITY
-    <!-- <iframe id="stream" src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCurrentMuseum%2Fvideos%2F654859708235328%2F&show_text=0&width=560" width="1000" height="800" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allowFullScreen="true"></iframe> -->
+h1 THE CURRENT // STREAM
+<iframe id="stream" src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCurrentMuseum%2Fvideos%2F654859708235328%2F&show_text=0&width=560" width="1000" height="800" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allowFullScreen="true"></iframe>
 
-    div.flexcontainer
-      div.commingsoon Livestream 02.20.18
-    div.credit Video src: SNOW YUNXUE FU – 'SIDE' (2017)
-    div.fullscreen
-      div.video
-        div.wrapper
-          iframe#videoIframe(src='https://player.vimeo.com/video/222431003?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0', width='500', height='281', frameborder='0', webkitallowfullscreen='', mozallowfullscreen='', allowfullscreen='')
+div.fullscreen
+  div.video
+    div.wrapper
+      iframe#videoIframe(src='https://player.vimeo.com/video/222431003?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0', width='500', height='281', frameborder='0', webkitallowfullscreen='', mozallowfullscreen='', allowfullscreen='')
+
+  div.name
+    input(type="text", placeholder="A screenname to call your own")#name
+  div.chat
+    div#chatbox
+      form#messageForm
+        textarea(rows="4", cols="50", placeholder="", maxlength=200)#outgoingMessage
+    div#buddylist
+      b#buddylistTitle People here with you:
+      br
+      div#participants
+  div#messages.chat
+
+  input(type="text", placeholder="magic")#magicInput
