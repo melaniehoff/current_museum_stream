@@ -1,17 +1,10 @@
 /*
  Module dependencies:
-
  - Express
  - Http (to run Express)
  - Body parser (to parse JSON requests)
  - Underscore (because it's cool)
  - Socket.IO
-
- It is a common practice to name the variables after the module name.
- Ex: http is the "http" module, express is the "express" module, etc.
- The only exception is Underscore, where we use, conveniently, an
- underscore. Oh, and "socket.io" is simply called io.
-
  */
 var express = require("express")
   , app = express()
@@ -43,7 +36,9 @@ app.set("port", 8080);
 app.set("views", __dirname + "/views");
 
 //View engine is Jade
-app.set("view engine", "jade");
+// app.set("view engine", "jade");
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 //Specify where the static content is
 app.use(express.static("public", __dirname + "/public"));
@@ -53,6 +48,7 @@ app.use(bodyParser.json());
 
 /* Server routing */
 
+
 //Handle route "GET /", as in "http://localhost:8080/"
 app.get("/", function(request, response) {
 
@@ -60,6 +56,8 @@ app.get("/", function(request, response) {
   response.render("index");
 
 });
+
+
 
 //POST method to create a chat message
 app.post("/message", function(request, response) {
@@ -74,6 +72,7 @@ app.post("/message", function(request, response) {
 
   //We also expect the sender's name with the message
   var name = request.body.name;
+
 
   //Let our chatroom know there was a new message
   io.sockets.emit("incomingMessage", {message: message, name: name});
@@ -94,7 +93,7 @@ io.on("connection", function(socket){
    participants to all connected clients
    */
   socket.on("newUser", function(data) {
-    // console.log(data);
+    console.log(data);
     participants.push({id: data.id, name: data.name});
     io.sockets.emit("newConnection", {participants: participants});
   });

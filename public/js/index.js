@@ -1,5 +1,6 @@
 function init() {
 
+
   var serverBaseUrl = document.domain;
 
   /*
@@ -170,6 +171,7 @@ function init() {
   });
   $('#name').keypress(function (e) {
     if (e.which == 13) {
+      console.log("name enter");
       newName();
       $( ".name" ).hide();
       $( ".chat" ).show();
@@ -208,6 +210,6 @@ function init() {
 
 
 
-
-
-$(document).on('ready', init);
+$( document ).ready(function() {
+  init();
+});
