@@ -83,12 +83,16 @@ h1 {
   width: 200px;
   font-size: 1em;
   border-radius: 10px;
-  display: none;
+  /* display: none; */
   color: black;
   position: absolute !important;
   z-index: 300;
   top: 94%;
   text-align: center;
+}
+
+#participants {
+  color: white;
 }
 
 textarea {

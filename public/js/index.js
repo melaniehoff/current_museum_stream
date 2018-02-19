@@ -19,7 +19,7 @@ function init() {
     $('#participants').html('');
     for (var i = 0; i < participants.length; i++) {
       $('#participants').append('<span id="' + participants[i].id + '">' +
-        participants[i].name + ' ' + (participants[i].id === sessionId ? '*' : '') + '<br /></span>');
+        participants[i].name + ' ' + (participants[i].id === sessionId ? '💜' : '') + '<br /></span>');
     }
   }
 
@@ -85,7 +85,7 @@ function init() {
 
    function newName() {
      socket.emit('newUser', {id: sessionId, name: $('#name').val()});
-     console.log($('#name').val());
+     console.log("My screenname: " + $('#name').val());
    };
 
   function sendMessage() {
@@ -171,7 +171,6 @@ function init() {
   });
   $('#name').keypress(function (e) {
     if (e.which == 13) {
-      console.log("name enter");
       newName();
       $( ".name" ).hide();
       $( ".chat" ).show();

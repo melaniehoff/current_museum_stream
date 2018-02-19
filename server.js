@@ -22,12 +22,18 @@ var express = require("express")
  }
  */
 var participants = [];
-var currentVideo = "https://player.vimeo.com/video/222431003?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0";
+var currentVideo = "";
+// var currentVideo = "https://player.vimeo.com/video/222431003?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0";
+
+
+
+
 /* Server config */
 
 //Server's IP address
 // app.set("ipaddr", "159.65.164.238");
-app.set("ipaddr", "localhost");
+//app.set("ipaddr", "localhost");
+app.set("ipaddr", "0.0.0.0");
 
 
 //Server's port number
@@ -85,8 +91,9 @@ app.post("/message", function(request, response) {
 
 /* Socket.IO events */
 io.on("connection", function(socket){
+  console.log("connection: " + socket.id);
   io.sockets.emit("newConnection", {participants: participants});
-  io.sockets.emit("firstVideo", currentVideo);
+  // io.sockets.emit("firstVideo", currentVideo);
 
   /*
    When a new user connects to our server, we expect an event called "newUser"
@@ -94,7 +101,7 @@ io.on("connection", function(socket){
    participants to all connected clients
    */
   socket.on("newUser", function(data) {
-    console.log(data);
+    console.log("new screenname: " + data.name);
     participants.push({id: data.id, name: data.name});
     io.sockets.emit("newConnection", {participants: participants});
   });
@@ -127,6 +134,7 @@ io.on("connection", function(socket){
   socket.on("disconnect", function() {
     participants = _.without(participants,_.findWhere(participants, {id: socket.id}));
     io.sockets.emit("userDisconnected", {id: socket.id, sender:"system"});
+    console.log("disconnect: " + socket.id);
   });
 
 });
