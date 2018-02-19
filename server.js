@@ -26,8 +26,9 @@ var currentVideo = "https://player.vimeo.com/video/222431003?background=1autopla
 /* Server config */
 
 //Server's IP address
-// app.set("ipaddr", "127.0.0.1");
+// app.set("ipaddr", "159.65.164.238");
 app.set("ipaddr", "localhost");
+
 
 //Server's port number
 app.set("port", 8080);
