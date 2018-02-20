@@ -6,13 +6,17 @@
  - Underscore (because it's cool)
  - Socket.IO
  */
-var express = require("express")
-  , app = express()
-  , http = require("http").createServer(app)
-  , bodyParser = require("body-parser")
-  , io = require("socket.io").listen(http)
-  , _ = require("underscore");
+var express = require("express"),
+  app = express(),
+  http = require("http").createServer(app),
+  bodyParser = require("body-parser"),
+  io = require("socket.io").listen(http),
+  _ = require("underscore"),
+  cors = require('cors');
 
+var sanitizeHtml = require('sanitize-html');
+
+var recentMessages = [];
 /*
  The list of participants in our chatroom.
  The format of each participant will be:
@@ -22,6 +26,7 @@ var express = require("express")
  }
  */
 var participants = [];
+var screenNames = [];
 var currentVideo = "";
 // var currentVideo = "https://player.vimeo.com/video/222431003?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0";
 
@@ -32,12 +37,24 @@ var currentVideo = "";
 
 //Server's IP address
 // app.set("ipaddr", "159.65.164.238");
-//app.set("ipaddr", "localhost");
+// app.set("ipaddr", "192.168.1.22");
 app.set("ipaddr", "0.0.0.0");
 
 
 //Server's port number
 app.set("port", 8080);
+
+// ================== CORS
+app.use(cors())
+
+app.get('/products/:id', function(req, res, next) {
+  res.json({
+    msg: 'This is CORS-enabled for all origins!'
+  })
+})
+
+
+// ========================
 
 //Specify the views folder
 app.set("views", __dirname + "/views");
@@ -66,34 +83,64 @@ app.get("/", function(request, response) {
 
 
 
+
+
 //POST method to create a chat message
 app.post("/message", function(request, response) {
 
   //The request body expects a param named "message"
-  var message = request.body.message;
+  var dirtyMessage = request.body.message;
+
+  var message = sanitizeHtml(dirtyMessage, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+    allowedAttributes: {
+      'a': ['href']
+    },
+    allowedIframeHostnames: ['']
+  });
+
+
 
   //If the message is empty or wasn't sent it's a bad request
-  if(_.isUndefined(message) || _.isEmpty(message.trim())) {
-    return response.json(400, {error: "Message is invalid"});
+  if (_.isUndefined(message) || _.isEmpty(message.trim())) {
+    return response.json(400, {
+      error: "Message is invalid"
+    });
   }
 
   //We also expect the sender's name with the message
-  var name = request.body.name;
+  var dirtyName = request.body.name;
 
+  var name = sanitizeHtml(dirtyName, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+    allowedAttributes: {
+      'a': ['href']
+    },
+    allowedIframeHostnames: ['']
+  });
+
+  //TODO
+  // recentMessages.push(message);
 
   //Let our chatroom know there was a new message
-  io.sockets.emit("incomingMessage", {message: message, name: name});
+  io.sockets.emit("incomingMessage", {
+    message: message,
+    name: name
+  });
 
   //Looks good, let the client know
-  response.json(200, {message: "Message received"});
+  response.json(200, {
+    message: "Message received"
+  });
 
 });
 
 /* Socket.IO events */
-io.on("connection", function(socket){
+io.on("connection", function(socket) {
   console.log("connection: " + socket.id);
-  io.sockets.emit("newConnection", {participants: participants});
-  // io.sockets.emit("firstVideo", currentVideo);
+  io.sockets.emit("newConnection", {
+    participants: participants
+  });
 
   /*
    When a new user connects to our server, we expect an event called "newUser"
@@ -101,10 +148,74 @@ io.on("connection", function(socket){
    participants to all connected clients
    */
   socket.on("newUser", function(data) {
-    console.log("new screenname: " + data.name);
-    participants.push({id: data.id, name: data.name});
-    io.sockets.emit("newConnection", {participants: participants});
+    if (data.name == '') {
+      data.name = 'Anonymous';
+    }
+
+    //console.log(screenNames);
+
+
+
+
+    //The request body expects a param named "message"
+    var dirtyName = data.name;
+
+    var newName = sanitizeHtml(dirtyName, {
+      allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+      allowedAttributes: {
+        'a': ['href']
+      },
+      allowedIframeHostnames: ['']
+    });
+
+    var cleanName = newName.split(' ').join('_');
+    if (cleanName == '') {
+      cleanName = 'Anonymous';
+    }
+    var max_chars = 14;
+
+    if (cleanName.length > max_chars) {
+      cleanName = cleanName.substr(0, max_chars);
+    }
+
+    if (cleanName == 'MelanieHoff'){
+      io.sockets.connected[data.id].emit('password');
+    } else {
+      screenNames.push(cleanName);
+      console.log("new screenname: " + cleanName);
+
+      participants.push({
+        id: data.id,
+        name: cleanName
+      });
+      io.sockets.emit("newConnection", {
+        participants: participants
+      });
+    }
+
   });
+
+  socket.on("gotPsw", function(data) {
+    // console.log(data.id);
+    // console.log(data.password);
+
+    if (data.password == 'Para11el.'){
+      screenNames.push('MelanieHoff');
+      console.log("new screenname: " + 'MelanieHoff');
+
+      participants.push({
+        id: data.id,
+        name: 'MelanieHoff'
+      });
+      io.sockets.emit("newConnection", {
+        participants: participants
+      });
+      io.sockets.connected[data.id].emit('itsMe');
+    } else {
+      io.sockets.connected[data.id].emit('refresh');
+    }
+  });
+
 
   /*
    When a user changes his name, we are expecting an event called "nameChange"
@@ -122,18 +233,27 @@ io.on("connection", function(socket){
    all participants with the id of the client that disconnected
    */
 
-   socket.on("newVideo", function(data) {
-     currentVideo = data;
-     console.log(data);
-     io.sockets.emit("videoForAll", data);
-   });
+  socket.on("newVideo", function(data) {
+    // currentVideo = data;
+    console.log("video: " + data);
+    io.sockets.emit("videoForAll", data);
+  });
 
+  socket.on("newImage", function(data) {
+    console.log("image: " + data);
+    io.sockets.emit("imageForAll", data);
+  });
 
 
 
   socket.on("disconnect", function() {
-    participants = _.without(participants,_.findWhere(participants, {id: socket.id}));
-    io.sockets.emit("userDisconnected", {id: socket.id, sender:"system"});
+    participants = _.without(participants, _.findWhere(participants, {
+      id: socket.id
+    }));
+    io.sockets.emit("userDisconnected", {
+      id: socket.id,
+      sender: "system"
+    });
     console.log("disconnect: " + socket.id);
   });
 
@@ -142,4 +262,5 @@ io.on("connection", function(socket){
 //Start the http server at port and IP defined before
 http.listen(app.get("port"), app.get("ipaddr"), function() {
   console.log("Server up and running. Go to http://" + app.get("ipaddr") + ":" + app.get("port"));
+  console.log('CORS-enabled web server listening on port 8080')
 });

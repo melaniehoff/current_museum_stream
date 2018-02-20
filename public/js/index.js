@@ -1,5 +1,8 @@
 function init() {
 
+  var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+
 
   var serverBaseUrl = document.domain;
 
@@ -12,15 +15,18 @@ function init() {
 
   //We'll save our session ID in a variable for later
   var sessionId = '';
+  var mySn;
 
 
   //Helper function to update the participants' list
   function updateParticipants(participants) {
     $('#participants').html('');
     for (var i = 0; i < participants.length; i++) {
-      $('#participants').append('<span id="' + participants[i].id + '">' +
-        participants[i].name + ' ' + (participants[i].id === sessionId ? '💜' : '') + '<br /></span>');
+      $('#participants').append('<span id="' + participants[i].id + '">' + (participants[i].id === sessionId ? '<span style="color:rgb(51, 18, 89); background-color:transparent; padding:0px; margin:0px;">⇢</span>' : '') +
+        participants[i].name + '</span><br>');
     }
+    var objDiv = document.getElementById("participants");
+    objDiv.scrollTop = objDiv.scrollHeight;
   }
 
   /*
@@ -30,11 +36,14 @@ function init() {
    with a session ID and a name. We'll emit the "newUser" event
    for that.
    */
-  socket.on('connect', function () {
-    $( "#name" ).focus();
+  socket.on('connect', function() {
+    $("#name").focus();
     sessionId = socket.io.engine.id;
     console.log('Connected ' + sessionId);
+    getVimeoCredit();
   });
+
+
 
   /*
    When the server emits the "newConnection" event, we'll reset
@@ -42,9 +51,10 @@ function init() {
    Note we are assigning the sessionId as the span ID.
    */
 
-   socket.on('newConnection', function (data) {
-     updateParticipants(data.participants);
-   });
+  socket.on('newConnection', function(data) {
+    updateParticipants(data.participants);
+
+  });
   /*
    When the server emits the "userDisconnected" event, we'll
    remove the span element from the participants element
@@ -53,28 +63,31 @@ function init() {
     $('#' + data.id).remove();
   });
 
+
   /*
-   When the server fires the "nameChanged" event, it means we
-   must update the span with the given ID accordingly
-   */
-  socket.on('nameChanged', function (data) {
-    $('#' + data.id).html(data.name + ' ' + (data.id === sessionId ? '*' : '') + '<br />');
-  });
 
   /*
    When receiving a new chat message with the "incomingMessage" event,
    we'll prepend it to the messages section
    */
-  socket.on('incomingMessage', function (data) {
+  socket.on('incomingMessage', function(data) {
     var message = data.message;
     var name = data.name;
-    $('#messages').prepend( name + ': <span class="chatText">' + message + '</span><br>');
+    if (name == 'MelanieHoff'){
+      name = '<span style="color:rgb(214, 0, 212);">' + name + '</span>'
+    }
+    if (name == mySn){
+      name = '<span style="color:rgb(51, 18, 89);">' + name + '</span>'
+    }
+    $('#messages').append('<span class="chatName">' + name + ':</span>' + '<span class="chatText"> ' + message + '</span><br>');
+    var objDiv = document.getElementById("messages");
+    objDiv.scrollTop = objDiv.scrollHeight;
   });
 
   /*
    Log an error if unable to connect to server
    */
-  socket.on('error', function (reason) {
+  socket.on('error', function(reason) {
     console.log('Unable to connect to server', reason);
   });
 
@@ -83,20 +96,40 @@ function init() {
    whatever message we have in our textarea
    */
 
-   function newName() {
-     socket.emit('newUser', {id: sessionId, name: $('#name').val()});
-     console.log("My screenname: " + $('#name').val());
-   };
+  function newName() {
+    var sn = $('#name').val().split(' ').join('_');
+    if (sn.length > 14) {
+      alert("Pick a screenname under 15 characters plz");
+    } else {
+      socket.emit('newUser', {
+        id: sessionId,
+        name: sn
+      });
+      mySn = sn;
+      $(".name").hide();
+      $(".chatboxCon").show();
+      $(".messagesCon").show();
+      $(".chat").show();
+      $("textarea").show();
+      $("#stream").show();
+      // $("#buddylist").show();
+
+    }
+
+  };
 
   function sendMessage() {
     var outgoingMessage = $('#outgoingMessage').val();
     var name = $('#name').val();
     $.ajax({
-      url:  '/message',
+      url: '/message',
       type: 'POST',
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify({message: outgoingMessage, name: name})
+      data: JSON.stringify({
+        message: outgoingMessage,
+        name: name
+      })
     });
 
   }
@@ -120,11 +153,6 @@ function init() {
    Helper function to disable/enable Send button
    */
 
-  function checkOutgoingMessageLen() {
-    //TODO
-    var outgoingMessageValue = $('#outgoingMessage').val();
-    // $('#send').attr('disabled', (outgoingMessageValue.trim()).length > 0 ? false : true);
-  }
 
 
   function changeBackground() {
@@ -133,82 +161,168 @@ function init() {
     socket.emit('newVideo', video);
   }
 
+  function changeImage() {
+    var image = $('#diamond').val();
+    console.log(image);
+    socket.emit('newImage', image);
+  }
 
-  socket.on('videoForAll', function (data) {
+
+  socket.on('videoForAll', function(data) {
     console.log("we all got the video: " + data);
     var cleaned = data.replace(/https:\/\/vimeo.com/i, '');
     var newUrl = "https://player.vimeo.com/video" + cleaned + "?background=1autoplay=1&loop=1&title=0&byline=0&portrait=0";
     console.log(newUrl);
+    $('.fullscreenImg').hide();
+    $('#videoIframe').show();
     $('#videoIframe').attr('src', newUrl);
+    $('.credit').show();
+    getVimeoCredit();
   });
 
-  socket.on('firstVideo', function (data) {
-    console.log("we got first video: " + data);
-    $('#videoIframe').attr('src', data);
+  socket.on('imageForAll', function(data) {
+    console.log("we all got the IMAGE: " + data);
+    $('#videoIframe').hide();
+    $('.credit').hide();
+    // $('#imageBg').attr('src', data);
+    $('.fullscreenImg').css('background-image', 'url("' + data + '")');
+    // $('.fullscreenImg').css('background-image','url("https://pbs.twimg.com/media/DWbBWw1VoAAjFKS.jpg")');
+    // $('#imageBg').show();
+    $('.fullscreenImg').show();
   });
 
-  /*
-   When a user updates his/her name, let the server know by
-   emitting the "nameChange" event
-   */
-  // function nameFocusOut() {
-  //   var name = $('#name').val();
-  //   socket.emit('nameChange', {id: sessionId, name: name});
-  // }
-  // https://player.vimeo.com/video/254932961
 
-  /* Elements setup */
-  // $('#outgoingMessage').on('keydown', outgoingMessageKeyDown);
-  // $('#outgoingMessage').on('keyup', outgoingMessageKeyUp);
-  // $('#name').on('focusout', nameFocusOut);
-  // $('#send').on('click', sendMessage);
-  $('#outgoingMessage').keypress(function (e) {
+  function getVimeoCredit() {
+    console.log("getVimeoCredit Called");
+    var vimeoUrl = $('#videoIframe').attr('src');
+    // console.log("vimeoUrl = " + vimeoUrl);
+    var subStr = vimeoUrl.match("video/(.*)\?background");
+    // alert(subStr[1]);
+    // console.log("subStr[1]: " + subStr[1]);
+    vimeoId = subStr[1].slice(0, -1);
+    console.log(vimeoId);
+
+    $('.vimeo').each(function() {
+      var $this = this;
+      $.ajax({
+        type: 'GET',
+        url: 'http://vimeo.com/api/v2/video/' + vimeoId + '.json',
+        jsonp: 'callback',
+        dataType: 'jsonp',
+        success: function(data) {
+
+          var v = data[0];
+          console.log(v.title);
+          console.log(v.user_name);
+          $("#title").html(v.title);
+          $("#artist").html(v.user_name);
+
+        }
+      });
+    });
+  }
+
+  setTimeout(function() {
+    if (is_safari && (screen.width > 768)) {
+      alert('Hi! It looks like you\'re using Safari and that\'s OK.\nTo get the full experience, switch to Chrome.');
+    };
+  }, 1400);
+
+
+  $('#outgoingMessage').keypress(function(e) {
     if (e.which == 13) {
       sendMessage();
-      $('textarea').val('')
-      return false;    //<---- Add this line
+      $('textarea').val('');
+      $('textarea').removeAttr('placeholder');
+      return false; //<---- Add this line
     }
   });
-  $('#name').keypress(function (e) {
+  $('#name').keypress(function(e) {
     if (e.which == 13) {
       newName();
-      $( ".name" ).hide();
-      $( ".chat" ).show();
-      $( "#stream" ).show();
-      return false;    //<---- Add this line
+      return false; //<---- Add this line
     }
   });
-  $('#magicInput').keypress(function (e) {
+  $('#magicInput').keypress(function(e) {
     if (e.which == 13) {
       changeBackground();
-      return false;    //<---- Add this line
+      return false; //<---- Add this line
     }
   });
 
+  $('#diamond').keypress(function(e) {
+    if (e.which == 13) {
+      changeImage();
+      return false; //<---- Add this line
+    }
+  });
+
+  socket.on('password', function(data) {
+    $('#myPsw').show();
+    $('#stream').hide();
+    $('textarea').hide();
+  });
+
+
+  $('#myPsw').keypress(function(e) {
+    if (e.which == 13) {
+      var x = document.getElementById("myPsw").value;
+      socket.emit('gotPsw', {
+        id: sessionId,
+        password: x
+      });
+      return false; //<---- Add this line
+    }
+  });
+
+  socket.on('itsMe', function(data) {
+    console.log("ITSME!!!");
+    setTimeout(function() {
+      showshit();
+    }, 1400);
+
+  });
+
+
+  socket.on('refresh', function(data) {
+    alert("NO");
+      location.reload();
+  });
 
 
   function videoSize() {
     var $windowHeight = $(window).height();
     var $videoHeight = $(".video").outerHeight();
-  	var $scale = $windowHeight / $videoHeight;
+    var $scale = $windowHeight / $videoHeight;
 
     if ($videoHeight <= $windowHeight) {
       $(".video").css({
-        "-webkit-transform" : "scale("+$scale+") translateY(-50%)",
-  			"transform" : "scale("+$scale+") translateY(-50%)"
-  		});
-  	};
+        "-webkit-transform": "scale(" + $scale + ") translateY(-50%)",
+        "transform": "scale(" + $scale + ") translateY(-50%)"
+      });
+    };
   }
 
-  $(window).on('load resize',function(){
+  $(window).on('load resize', function() {
     videoSize();
   });
 
 
 }
 
+function showshit(){
+  $(".name").hide();
+  $("#myPsw").hide();
+  $("#stream").show();
+  $("#magicInput").show();
+  $("#diamond").show();
+  $(".chatboxCon").show();
+  $(".messagesCon").show();
+  $('textarea').show();
+  console.log("showshit!!!");
+};
 
+$(document).ready(function() {
 
-$( document ).ready(function() {
   init();
 });

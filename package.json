@@ -25,9 +25,11 @@
   },
   "dependencies": {
     "body-parser": "1.4.3",
+    "cors": "^2.8.4",
     "ejs": "^2.5.7",
     "express": "4.6.1",
     "jade": "1.4.2",
+    "sanitize-html": "^1.17.0",
     "socket.io": "1.0.6",
     "underscore": "1.6.0"
   },

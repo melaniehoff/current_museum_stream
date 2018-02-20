@@ -2,57 +2,74 @@
 <html>
 
 <head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Cousine" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/index.js"></script>
   <title>Current Stream // Identity</title>
-  <link rel="icon" type="image/png" href="favicon1.png"/>
+  <link rel="icon" type="image/png" href="favicon1.png" />
 </head>
 
 <body>
-  <h1><a href="http://current.mu">THE CURRENT // IDENTITY</a></h1>
+  <h1><a href="http://current.mu/salon">THE CURRENT // IDENTITY</a></h1>
+  <h2 id="mobile">
+To participate in The Current Salon livestream - use Chrome on desktop
+  </h2>
 
-
-  <div class="fullscreen">
-    <div class="video">
-      <div class="wrapper">
-        <iframe class="vimeo" id="videoIframe" src="https://player.vimeo.com/video/222431003?background=1autoplay=1&amp;loop=1&amp;title=0&amp;byline=0&amp;portrait=0" width="500" height="281" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+  <div id="everything">
+    <div class="fullscreen">
+      <div class="video">
+        <div class="wrapper">
+          <iframe class="vimeo" id="videoIframe" src="https://player.vimeo.com/video/222431003?background=1autoplay=1&amp;loop=1&amp;title=0&amp;byline=0&amp;portrait=0" width="500" height="281" frameborder="0" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen=""></iframe>
+        </div>
       </div>
     </div>
-  </div>
+    <div class="fullscreenImg">
+      <!-- <img id="imageBg" src=""> -->
+    </div>
 
-
-  <div style="position: absolute; left: 50%;">
-    <div style="position: relative; left: -50%;">
-      <div class="name">
-        <input type="text" placeholder="A screenname to call your own" id="name" />
+    <div id="nameContainer">
+      <div id="nameCentered">
+        <div class="name">
+          <input type="text" placeholder="Screenname:" id="name" />
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- <div class="name">
+    <!-- <div class="name">
     <input type="text" placeholder="A screenname to call your own" id="name" />
   </div> -->
-  <div class="chat">
-    <div id="chatbox">
-      <form id="messageForm">
-        <textarea rows="4" cols="50" placeholder="" maxlength="200" id="outgoingMessage"></textarea>
-      </form>
+
+    <div id="buddylist">
+      <div id="buddylistTitle">People here with you:</div>
+      <br>
+      <div id="participants">
+      </div>
     </div>
-    <div id="buddylist"><b id="buddylistTitle">People here with you:</b><br/>
-      <div id="participants"></div>
+    <div class="messagesCon" id="messages"></div>
+    <div class="chatboxCon">
+      <div id="chatbox">
+        <form id="messageForm">
+          <textarea placeholder="Chat:" maxlength="200" id="outgoingMessage"></textarea>
+        </form>
+      </div>
     </div>
+
+
+    <iframe id="stream" src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCurrentMuseum%2Fvideos%2F702590980128867%2F&show_text=0&width=560" width="1000" height="800" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
+      allowTransparency="true" allowFullScreen="true"></iframe>
+
+    <div class="credit">
+      Video src:
+      <span id="artist"></span> – <span id="title"></span>
+    </div>
+    <div id="host">Hosted online by Melanie Hoff, 360° livestream powered by Gate Reality</div>
+    <input type="text" placeholder="waterfall" id="magicInput" onfocus="this.value=''">
+    <input type="text" placeholder="diamond" id="diamond" onfocus="this.value=''">
+      <input type="password" id="myPsw" value="">
   </div>
-  <div class="chat" id="messages"></div>
-
-
-  <iframe id="stream" src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FCurrentMuseum%2Fvideos%2F702590980128867%2F&show_text=0&width=560" width="1000" height="800" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
-    allowTransparency="true" allowFullScreen="true"></iframe>
-
-  <div class="credit">Video src: SNOW YUNXUE FU – 'SIDE' (2017)</div>
-  <div id="host">Hosted online by Melanie Hoff, 360° livestream powered by Gate Reality</div>
-  <input type="text" placeholder="magic" id="magicInput">
 </body>
 
 </html>
