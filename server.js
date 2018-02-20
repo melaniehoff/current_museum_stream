@@ -178,7 +178,10 @@ io.on("connection", function(socket) {
       cleanName = cleanName.substr(0, max_chars);
     }
 
-    if (cleanName == 'MelanieHoff'){
+
+    var melaniehoff = 'MelanieHoff'
+
+    if (cleanName.toUpperCase() === melaniehoff.toUpperCase()){
       io.sockets.connected[data.id].emit('password');
     } else {
       screenNames.push(cleanName);
