@@ -121,6 +121,9 @@ function init() {
   function sendMessage() {
     var outgoingMessage = $('#outgoingMessage').val();
     var name = $('#name').val();
+    if (name === ''){
+      name = 'Anonymous';
+    }
     $.ajax({
       url: '/message',
       type: 'POST',
