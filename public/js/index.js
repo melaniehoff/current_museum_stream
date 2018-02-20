@@ -79,7 +79,7 @@ function init() {
     if (name == mySn){
       name = '<span style="color:rgb(51, 18, 89);">' + name + '</span>'
     }
-    if (name == 'MelanieHoff'){
+    if (name.toUpperCase() === 'melaniehoff'.toUpperCase()){
       name = '<span style="color:rgb(230, 0, 235);">' + name + '</span>'
     }
     $('#messages').append('<span class="chatName">' + name + ':</span>' + '<span class="chatText"> ' + message + '</span><br>');
