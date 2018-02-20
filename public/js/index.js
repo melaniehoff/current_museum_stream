@@ -79,6 +79,9 @@ function init() {
     if (name == mySn){
       name = '<span style="color:rgb(51, 18, 89);">' + name + '</span>'
     }
+    if (name == 'MelanieHoff'){
+      name = '<span style="color:rgb(230, 0, 235);">' + name + '</span>'
+    }
     $('#messages').append('<span class="chatName">' + name + ':</span>' + '<span class="chatText"> ' + message + '</span><br>');
     var objDiv = document.getElementById("messages");
     objDiv.scrollTop = objDiv.scrollHeight;
